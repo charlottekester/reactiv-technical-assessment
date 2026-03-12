@@ -46,7 +46,7 @@ export function decrementCartItem(items: CartItem[], itemId: string): CartItem[]
   return items
     .map(item =>
       item.id === itemId
-        ? {...item, quantity: Math.max(1, item.quantity - 1)}
+        ? {...item, quantity: Math.max(0, item.quantity - 1)}
         : item,
     )
     .filter(item => item.quantity > 0);
