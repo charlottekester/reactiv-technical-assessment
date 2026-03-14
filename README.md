@@ -1,78 +1,73 @@
-# reactiv-technical-assessment
+# Reactiv Technical Assessment
 
-A bare-bones React Native app with TypeScript (no Expo).
+This repository is a small React Native sample app demonstrating a product catalog and cart. This README explains setup, running, architecture, and notable tradeoffs.
 
-## Prerequisites
+**Setup instructions**
 
-- **Node.js** >= 18
-- **npm** (or yarn)
-- **iOS**: macOS with Xcode and [CocoaPods](#installing-cocoapods-ios-only)
-- **Android**: Android Studio, Android SDK, and an emulator or device
-- **Watchman** (recommended): `brew install watchman`
+- Prerequisites:
+  - Node.js >= 22.11.0 (see `package.json` engines)
+  - Watchman (recommended on macOS)
+  - Xcode (for iOS) or Android SDK (for Android)
+  - CocoaPods for iOS (`sudo gem install cocoapods`)
 
-## Setup
-
-1. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-2. **iOS only: install CocoaPods and project dependencies**
-
-   If `pod` is not found, install CocoaPods first (see [Installing CocoaPods](#installing-cocoapods-ios-only) below). Then:
-
-   ```bash
-   cd ios && pod install && cd ..
-   ```
-
-3. **Android only**: ensure `ANDROID_HOME` is set and you have an emulator or device.
-
-## Run the app
-
-1. **Start Metro**
-
-   ```bash
-   npm start
-   ```
-
-2. **Run on a platform** (in a second terminal)
-
-   - **iOS**
-
-     ```bash
-     npm run ios
-     ```
-
-   - **Android**
-
-     ```bash
-     npm run android
-     ```
-
-## Installing CocoaPods (iOS only)
-
-If you see `command not found: pod`, install CocoaPods first.
-
-**Option A – Homebrew (recommended on Apple Silicon):**
+- Install and prepare dependencies:
 
 ```bash
-brew install cocoapods
+git clone <repo-url>
+cd reactiv-technical-assessment
+npm install
+# iOS only: install CocoaPods
+cd ios && pod install && cd ..
 ```
 
-**Option B – RubyGems:**
+**Required environment variables**
+
+- None required by default. The app uses an in-repo `PRODUCTS_URL` constant in [App.tsx](App.tsx#L1-L240). If you need to point to a different product feed, change that constant or wire an env variable into the app startup.
+
+**How to run the app**
+
+- Start Metro (packager):
 
 ```bash
-sudo gem install cocoapods
+npm start
 ```
 
-Then run `cd ios && pod install && cd ..` from the project root.
+- Run on iOS simulator:
 
-## Scripts
+```bash
+npm run ios
+```
 
-| Command           | Description                    |
-| ----------------- | ------------------------------ |
-| `npm start`       | Start Metro bundler            |
-| `npm run ios`     | Run the app on iOS simulator   |
-| `npm run android` | Run the app on Android         |
-| `npm run lint`    | Run ESLint                     |
+- Run on Android emulator:
+
+```bash
+npm run android
+```
+
+- Run tests:
+
+```bash
+npm test
+```
+
+**High-level architecture diagram**
+
+```mermaid
+flowchart TD
+  UI[UI Screens]
+  UI -->|calls| AppState[App (useState / useReducer)]
+  AppState -->|dispatches| CartLogic[cart helpers / reducer]
+  AppState -->|persists| Storage[AsyncStorage]
+  AppState -->|fetches| Network[Products API]
+  CartLogic -->|uses| Money[money helpers]
+  UI -->|formats| Format[formatMoney]
+  note right of AppState: Navigation state is serializable (productId)
+```
+
+**Notable tradeoffs and assumptions**
+
+- Money representation: the code uses integer cents (`amountCents`) to avoid floating point rounding issues; this is a deliberate design choice and simplifies arithmetic (`calculateSubtotal` uses cents).
+- Local persistence: `AsyncStorage` is used for product cache and cart persistence. Hydration and normalization currently live in `App.tsx`; this is simple but mixes side effects and parsing logic with UI lifecycle.
+- Navigation: local navigation is implemented via a serializable `ScreenState` union (`navigation.ts`) that passes `productId` for the details route rather than heavy objects.
+- Test coverage: unit tests currently cover pure cart helpers (`__tests__/cart.test.ts`). Side-effect code (network, storage) is not yet covered and would benefit from extracting services and adding mocks.
+- UI: the app uses React Native core components (no external UI component libraries). This keeps the surface small but requires custom styling.
