@@ -55,14 +55,16 @@ npm test
 ```mermaid
 flowchart TD
   UI[UI Screens]
-  UI -->|calls| AppState[App (useState / useReducer)]
-  AppState -->|dispatches| CartLogic[cart helpers / reducer]
+  UI -->|calls| AppState[App]
+  AppState -->|dispatches| CartLogic[Cart helpers/reducer]
   AppState -->|persists| Storage[AsyncStorage]
   AppState -->|fetches| Network[Products API]
   CartLogic -->|uses| Money[money helpers]
   UI -->|formats| Format[formatMoney]
-  note right of AppState: Navigation state is serializable (productId)
+  %% note removed for GitHub Mermaid compatibility
 ```
+
+Note: Navigation state is serializable (productId).
 
 **Notable tradeoffs and assumptions**
 
