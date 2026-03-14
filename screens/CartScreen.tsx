@@ -28,13 +28,8 @@ const CartScreen: React.FC<Props> = ({
     0,
   );
 
-  const subtotalMoney: Money = {
-    amount: String(subtotal.toFixed(2)),
-    currencyCode,
-  };
-
-  // For now, total equals subtotal (no tax/shipping).
-  const totalMoney = subtotalMoney;
+  const subtotalMoney: Money = {amount: String(subtotal.toFixed(2)), currencyCode};
+  const totalMoney = subtotalMoney; // For now, total equals subtotal (no tax/shipping).
 
   return (
     <View style={styles.cartContainer}>
@@ -52,7 +47,17 @@ const CartScreen: React.FC<Props> = ({
 
       {items.length === 0 ? (
         <View style={styles.centered}>
-          <Text style={styles.muted}>Your cart is empty.</Text>
+          <Text style={styles.errorText}>Your cart is empty</Text>
+          <Text style={styles.muted}>Add items from the catalog to get started.</Text>
+          <Pressable
+            style={styles.addToCartButton}
+            onPress={onBack}
+            accessibilityRole="button"
+            accessibilityLabel="Continue shopping"
+            hitSlop={12}
+          >
+            <Text style={styles.addToCartButtonText}>Continue shopping</Text>
+          </Pressable>
         </View>
       ) : (
         <>
@@ -88,7 +93,7 @@ const CartScreen: React.FC<Props> = ({
                     <Pressable
                       style={styles.qtyButton}
                       onPress={() => onDecrementQuantity(item.id)}
-                      hitSlop={8}
+                      hitSlop={12}
                       accessibilityRole="button"
                       accessibilityLabel={`Decrease quantity of ${item.title} ${item.variantTitle}`}>
                       <Text style={styles.qtyButtonText}>-</Text>
@@ -99,7 +104,7 @@ const CartScreen: React.FC<Props> = ({
                     <Pressable
                       style={styles.qtyButton}
                       onPress={() => onIncrementQuantity(item.id)}
-                      hitSlop={8}
+                      hitSlop={12}
                       accessibilityRole="button"
                       accessibilityLabel={`Increase quantity of ${item.title} ${item.variantTitle}`}>
                       <Text style={styles.qtyButtonText}>+</Text>
@@ -128,7 +133,7 @@ const CartScreen: React.FC<Props> = ({
                 {formatMoney(totalMoney)}
               </Text>
             </View>
-            <Pressable style={styles.clearCartButton} onPress={onClearCart}>
+            <Pressable style={styles.clearCartButton} onPress={onClearCart} accessibilityRole="button" accessibilityLabel="Clear cart" hitSlop={12}>
               <Text style={styles.clearCartButtonText}>Clear cart</Text>
             </Pressable>
           </View>

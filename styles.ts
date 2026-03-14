@@ -110,6 +110,7 @@ export const styles = StyleSheet.create({
   },
   detailsContent: {
     paddingBottom: 24,
+    paddingHorizontal: 16,
   },
   detailsImage: {
     width: '100%',
@@ -118,18 +119,15 @@ export const styles = StyleSheet.create({
   },
   detailsProductType: {
     marginTop: 12,
-    paddingHorizontal: 16,
     fontSize: 14,
     color: '#777777',
   },
   detailsPrice: {
-    paddingHorizontal: 16,
     marginTop: 4,
     fontSize: 20,
     fontWeight: '700',
   },
   availability: {
-    paddingHorizontal: 16,
     marginTop: 4,
     fontSize: 14,
   },
@@ -141,12 +139,12 @@ export const styles = StyleSheet.create({
   },
   sectionHeading: {
     marginTop: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     fontSize: 16,
     fontWeight: '600',
   },
   detailsDescription: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
@@ -158,7 +156,6 @@ export const styles = StyleSheet.create({
   optionValuesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 16,
     marginTop: 6,
   },
   optionPill: {
@@ -182,7 +179,6 @@ export const styles = StyleSheet.create({
     color: '#ffffff',
   },
   variantSummary: {
-    paddingHorizontal: 16,
     marginTop: 8,
     marginBottom: 16,
   },

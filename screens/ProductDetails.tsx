@@ -107,9 +107,11 @@ const ProductDetails: React.FC<Props> = ({
             source={{uri: heroImage.url}}
             style={styles.detailsImage}
             resizeMode="cover"
+            accessibilityRole="image"
+            accessibilityLabel={`${product.title} image`}
           />
         ) : (
-          <View style={[styles.detailsImage, styles.imagePlaceholder]}>
+          <View style={[styles.detailsImage, styles.imagePlaceholder]} accessible accessibilityLabel="No image available">
             <Text style={styles.imagePlaceholderText}>No image</Text>
           </View>
         )}
@@ -148,7 +150,12 @@ const ProductDetails: React.FC<Props> = ({
                     style={[
                       styles.optionPill,
                       isSelected && styles.optionPillSelected,
-                    ]}>
+                    ]}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityState={{selected: isSelected}}
+                    accessibilityLabel={`${option.name} ${value}`}
+                  >
                     <Text
                       style={[
                         styles.optionPillText,

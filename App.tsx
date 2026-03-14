@@ -41,7 +41,6 @@ const App = (): React.JSX.Element => {
   const subtotal = useMemo(() => calculateSubtotal(cartItems), [cartItems]);
   const currencyCode = cartItems[0]?.price.currencyCode ?? 'CAD';
 
-  // Load products with offline cache support.
   useEffect(() => {
     let isMounted = true;
 
@@ -50,7 +49,7 @@ const App = (): React.JSX.Element => {
         setIsLoading(true);
         setError(null);
 
-        // 1) Try to hydrate from cache so the catalog works offline.
+        // hydrate from cache
         try {
           const cached = await AsyncStorage.getItem(STORAGE_KEYS.products);
           if (cached && isMounted) {
@@ -58,51 +57,36 @@ const App = (): React.JSX.Element => {
             setProducts(parsed);
           }
         } catch {
-          // Ignore cache errors; we'll try network next.
+          // ignore
         }
 
-        // 2) Then try to refresh from network.
+        // refresh from network
         try {
           const response = await fetch(PRODUCTS_URL);
           if (response.ok) {
             const data = (await response.json()) as Product[];
-            if (isMounted) {
-              setProducts(data);
-            }
-            await AsyncStorage.setItem(
-              STORAGE_KEYS.products,
-              JSON.stringify(data),
-            );
+            if (isMounted) setProducts(data);
+            await AsyncStorage.setItem(STORAGE_KEYS.products, JSON.stringify(data));
           } else if (!products.length) {
             throw new Error(`Request failed with status ${response.status}`);
           }
         } catch (networkError) {
-          if (!products.length) {
-            throw networkError;
-          }
-          // If we have cached products already, silently stay on them.
+          if (!products.length) throw networkError;
         }
       } catch (e) {
-        if (isMounted) {
-          setError(
-            e instanceof Error ? e.message : 'Failed to load products.',
-          );
-        }
+        if (isMounted) setError(e instanceof Error ? e.message : 'Failed to load products.');
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        if (isMounted) setIsLoading(false);
       }
     };
 
     load();
-
     return () => {
       isMounted = false;
     };
   }, [products.length]);
 
-  // Hydrate cart from storage once.
+  // hydrate cart
   useEffect(() => {
     let isMounted = true;
     const hydrateCart = async () => {
@@ -122,42 +106,26 @@ const App = (): React.JSX.Element => {
     };
   }, []);
 
-  // Persist cart whenever it changes.
+  // persist cart
   useEffect(() => {
     const persist = async () => {
       try {
-        await AsyncStorage.setItem(
-          STORAGE_KEYS.cart,
-          JSON.stringify(cartItems),
-        );
+        await AsyncStorage.setItem(STORAGE_KEYS.cart, JSON.stringify(cartItems));
       } catch {
         // ignore
       }
     };
-    if (cartItems) {
-      persist();
-    }
+    if (cartItems) persist();
   }, [cartItems]);
 
-  const handleSelectProduct = (product: Product) => {
-    setScreen({type: 'details', productId: product.id});
-  };
-
-  const goToCatalog = () => {
-    setScreen({type: 'catalog'});
-  };
-
-  const goToCart = () => {
-    setScreen({type: 'cart'});
-  };
+  const handleSelectProduct = (product: Product) => setScreen({type: 'details', productId: product.id});
+  const goToCatalog = () => setScreen({type: 'catalog'});
+  const goToCart = () => setScreen({type: 'cart'});
 
   const handleAddToCart = (product: Product, variant: ProductVariant) => {
-    if (!variant) {
-      return;
-    }
-
-    setCartItems(prevItems =>
-      addItemToCart(prevItems, {
+    if (!variant) return;
+    setCartItems(prev =>
+      addItemToCart(prev, {
         id: `${product.id}-${variant.id}`,
         productId: product.id,
         variantId: variant.id,
@@ -170,17 +138,9 @@ const App = (): React.JSX.Element => {
     );
   };
 
-  const handleIncrementQuantity = (itemId: string) => {
-    setCartItems(prev => incrementCartItem(prev, itemId));
-  };
-
-  const handleDecrementQuantity = (itemId: string) => {
-    setCartItems(prev => decrementCartItem(prev, itemId));
-  };
-
-  const handleClearCart = () => {
-    setCartItems([]);
-  };
+  const handleIncrementQuantity = (itemId: string) => setCartItems(prev => incrementCartItem(prev, itemId));
+  const handleDecrementQuantity = (itemId: string) => setCartItems(prev => decrementCartItem(prev, itemId));
+  const handleClearCart = () => setCartItems([]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -194,25 +154,24 @@ const App = (): React.JSX.Element => {
           totalItemCount={totalItemCount}
         />
       )}
-      {screen.type === 'details' && (
-        (() => {
-          const product = products.find(p => p.id === screen.productId);
-          if (!product) {
-            // If product not found (e.g., stale id), go back to catalog
-            goToCatalog();
-            return null;
-          }
-          return (
-            <ProductDetails
-              product={product}
-              onBack={goToCatalog}
-              onAddToCart={handleAddToCart}
-              onOpenCart={goToCart}
-              totalItemCount={totalItemCount}
-            />
-          );
-        })()
-      )}
+
+      {screen.type === 'details' && (() => {
+        const product = products.find(p => p.id === screen.productId);
+        if (!product) {
+          goToCatalog();
+          return null;
+        }
+        return (
+          <ProductDetails
+            product={product}
+            onBack={goToCatalog}
+            onAddToCart={handleAddToCart}
+            onOpenCart={goToCart}
+            totalItemCount={totalItemCount}
+          />
+        );
+      })()}
+
       {screen.type === 'cart' && (
         <CartScreen
           items={cartItems}
