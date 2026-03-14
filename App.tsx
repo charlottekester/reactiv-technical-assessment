@@ -9,15 +9,14 @@ import {
   incrementCartItem,
 } from './cart';
 import type {Product, ProductVariant} from './types';
+import type ScreenState from './navigation';
 import {styles} from './styles';
 import ProductCatalog from './screens/ProductCatalog';
 import ProductDetails from './screens/ProductDetails';
 import CartScreen from './screens/CartScreen';
 
-type ScreenState =
-  | {type: 'catalog'}
-  | {type: 'details'; product: Product}
-  | {type: 'cart'};
+// use centralized, serializable navigation state
+type LocalScreenState = ScreenState;
 
 const PRODUCTS_URL =
   'https://gist.githubusercontent.com/agorovyi/40dcd166a38b4d1e9156ad66c87111b7/raw/36f1c815dd83ed8189e55e6e6619b5d7c7c4e7d6/testProducts.json';
@@ -29,7 +28,7 @@ const STORAGE_KEYS = {
 
 const App = (): React.JSX.Element => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [screen, setScreen] = useState<ScreenState>({type: 'catalog'});
+  const [screen, setScreen] = useState<LocalScreenState>({type: 'catalog'});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -141,7 +140,7 @@ const App = (): React.JSX.Element => {
   }, [cartItems]);
 
   const handleSelectProduct = (product: Product) => {
-    setScreen({type: 'details', product});
+    setScreen({type: 'details', productId: product.id});
   };
 
   const goToCatalog = () => {
@@ -196,13 +195,23 @@ const App = (): React.JSX.Element => {
         />
       )}
       {screen.type === 'details' && (
-        <ProductDetails
-          product={screen.product}
-          onBack={goToCatalog}
-          onAddToCart={handleAddToCart}
-          onOpenCart={goToCart}
-          totalItemCount={totalItemCount}
-        />
+        (() => {
+          const product = products.find(p => p.id === screen.productId);
+          if (!product) {
+            // If product not found (e.g., stale id), go back to catalog
+            goToCatalog();
+            return null;
+          }
+          return (
+            <ProductDetails
+              product={product}
+              onBack={goToCatalog}
+              onAddToCart={handleAddToCart}
+              onOpenCart={goToCart}
+              totalItemCount={totalItemCount}
+            />
+          );
+        })()
       )}
       {screen.type === 'cart' && (
         <CartScreen
